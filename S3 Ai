@@ -1,0 +1,30 @@
+import streamlit as st
+import google.generativeai as genai
+
+genai.configure(api_key="")
+
+
+model = genai.GenerativeModel('')
+
+# Función para generar respuesta
+def obtener_respuesta(pregunta):
+    prompt = f"""
+    Eres un asistente experto en contabilidad. Responde de forma clara, profesional y precisa.
+    Solo responde sobre temas de contabilidad. Si la pregunta no es de contabilidad, di educadamente que no puedes responderla.
+
+    Pregunta: {pregunta}
+    """
+    respuesta = model.generate_content(prompt)
+    return respuesta.text
+
+# Interfaz de Streamlit
+st.set_page_config(page_title="Chatbot Contable", page_icon="📊")
+st.title("📊 Asistente Contable Inteligente")
+
+# Entrada del usuario
+pregunta_usuario = st.text_input("Haz tu pregunta contable aquí:")
+
+if pregunta_usuario:
+    respuesta = obtener_respuesta(pregunta_usuario)
+    st.markdown("### Respuesta:")
+    st.write(respuesta)
