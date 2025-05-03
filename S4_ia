@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplicación de Arqueo de Caja y Estado de Resultados</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+        header {
+            background-color: #333;
+            color: white;
+            padding: 1em;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        main {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        section {
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        h2, h3 {
+            color: #333;
+        }
+        label {
+            display: inline-block;
+            width: 200px;
+            margin-bottom: 5px;
+        }
+        input[type="number"], input[type="date"], textarea {
+            width: calc(100% - 210px);
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #5cb85c;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        button:hover {
+            background-color: #4cae4c;
+        }
+        #resultado-arqueo, #resultado-estado-resultados, #saldos-mayor, #resumen-balanza {
+            margin-top: 15px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #777;
+        }
+        .mayor-input, .balanza-input {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 5px 10px;
+            margin-bottom: 5px;
+        }
+        .mayor-input label, .balanza-input label {
+            text-align: right;
+            padding-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Aplicación de Arqueo de Caja y Estado de Resultados</h1>
+    </header>
+
+    <main>
+        <section id="arqueo-caja">
+            <h2>Arqueo de Caja</h2>
+            <form id="formulario-arqueo">
+                <div>
+                    <label for="fecha-arqueo">Fecha del Arqueo:</label>
+                    <input type="date" id="fecha-arqueo" required>
+                </div>
+                <div>
+                    <label for="efectivo-declarado">Efectivo Declarado:</label>
+                    <input type="number" id="efectivo-declarado" step="0.01" required>
+                </div>
+                <h3>Detalle del Efectivo Contado</h3>
+                <div>
+                    <label for="billetes-1000">Billetes de $1000:</label>
+                    <input type="number" id="billetes-1000" value="0">
+                </div>
+                <div>
+                    <label for="billetes-500">Billetes de $500:</label>
+                    <input type="number" id="billetes-500" value="0">
+                </div>
+                <div>
+                    <label for="billetes-200">Billetes de $200:</label>
+                    <input type="number" id="billetes-200" value="0">
+                </div>
+                <div>
+                    <label for="billetes-100">Billetes de $100:</label>
+                    <input type="number" id="billetes-100" value="0">
+                </div>
+                <div>
+                    <label for="billetes-50">Billetes de $50:</label>
+                    <input type="number" id="billetes-50" value="0">
+                </div>
+                <div>
+                    <label for="billetes-20">Billetes de $20:</label>
+                    <input type="number" id="billetes-20" value="0">
+                </div>
+                <div>
+                    <label for="monedas-20">Monedas de $20:</label>
+                    <input type="number" id="monedas-20" value="0">
+                </div>
+                <div>
+                    <label for="monedas-10">Monedas de $10:</label>
+                    <input type="number" id="monedas-10" value="0">
+                </div>
+                <div>
+                    <label for="monedas-5">Monedas de $5:</label>
+                    <input type="number" id="monedas-5" value="0">
+                </div>
+                <div>
+                    <label for="monedas-2">Monedas de $2:</label>
+                    <input type="number" id="monedas-2" value="0">
+                </div>
+                <div>
+                    <label for="monedas-1">Monedas de $1:</label>
+                    <input type="number" id="monedas-1" value="0">
+                </div>
+                <div>
+                    <label for="monedas-050">Monedas de $0.50:</label>
+                    <input type="number" id="monedas-050" value="0">
+                </div>
+                <div>
+                    <label for="total-contado">Total Contado:</label>
+                    <input type="number" id="total-contado" value="0" readonly>
+                </div>
+                <div>
+                    <label for="faltante-sobrante">Faltante/Sobrante:</label>
+                    <input type="number" id="faltante-sobrante" value="0" readonly>
+                </div>
+                <button type="button" onclick="calcularArqueo()">Calcular Arqueo</button>
+            </form>
+            <div id="resultado-arqueo">
+            </div>
+        </section>
+
+        <section id="estado-resultados">
+            <h2>Estado de Resultados</h2>
+            <form id="formulario-estado-resultados">
+                <h3>Ingresos</h3>
+                <div>
+                    <label for="ingresos-ventas">Ingresos por Ventas:</label>
+                    <input type="number" id="ingresos-ventas" step="0.01" value="0">
+                </div>
+                <div>
+                    <label for="devoluciones-ventas">Devoluciones sobre Ventas:</label>
+                    <input type="number" id="devoluciones-ventas" step="0.01" value="0">
+                </div>
+                <div>
+                    <label for="descuentos-ventas">Descuentos sobre Ventas:</label>
+                    <input type="number" id="descuentos-ventas" step="0.01" value="0">
+                </div>
+                <div>
+                    <label for="rebajas-ventas">Rebajas sobre Ventas:</label>
+                    <input type="number" id="rebajas-ventas" step="0.01" value="0">
+                </div>
+                <h3>Compras y Costo de lo Vendido</h3>
+                <div>
+                    <label for="inventario-inicial">Inventario Inicial:</label>
+                    <input type="number" id="inventario-inicial" step="0.01" value="0">
+                </div>
+                <div>
+                    <label for="compras">Compras:</label>
+                    <input type="number" id="compras" step="0.01" value="0">
+                </div>
+                <div>
+                    <label for="gastos-compras">Gastos sobre Compras:</label>
+                    <input type="number" id="gastos-compras" step="0.01" value="0">
+                </div>
+                <div>
+                    <label for="devoluciones-compras">Devoluciones sobre Compras:</label>
+                    <input type="number" id="devoluciones-compras" step="0.01" value="0">
+                </div>
+                <div>
+                    <label for="descuentos-compras">Descuentos sobre Compras:</label>
+                    <input type="number" id="descuentos-compras" step="0.01" value="0">
+                </div>
+                <div>
+                    <label for="rebajas-compras">Rebajas sobre Compras:</label>
+                    <input type="number" id="rebajas-compras" step="0.01" value="0">
+                </div>
+                <div>
+                    <label for="inventario-final">Inventario Final:</label>
+                    <input type="number" id="inventario-final" step="0.01" value="0">
+                </div>
+                <button type="button" onclick="calcularEstadoResultadosPeriodico()">Calcular Estado de Resultados</button>
+            </form>
+            <div id="resultado-estado-resultados">
+            </div>
+        </section>
+
+        <section id="diario-mayor-balanza">
+            <h2>Proceso Contable (Diario, Mayor, Balanza)</h2>
+            <h3>Diario (Resumen)</h3>
+            <textarea id="resumen-diario" rows="5" cols="50" placeholder="Se contabilizaron los fletes y acarreos incurridos en la adquisición de inventario. (Para Gastos sobre compras)\nSe registraron devoluciones de mercancía por parte de clientes. (Para Devoluciones sobre ventas)\nSe concedieron descuentos a clientes por pronto pago o volumen de compra. (Para Descuentos sobre ventas)\nSe recibieron descuentos de proveedores por pronto pago o volumen de compra. (Para Descuentos sobre compras)\nSe otorgaron rebajas a proveedores por mercancía dañada o no conforme. (Para Rebajas sobre compras)\nSe concedieron rebajas a clientes por mercancía dañada o no conforme. (Para Rebajas sobre ventas)\nSe registraron las ventas de mercancía durante el periodo.\nSe efectuaron compras de inventario a crédito."></textarea>
+
+            <h3>Mayor (Saldos Principales)</h3>
+            <form id="formulario-mayor">
+                <div class="mayor-input">
+                    <label for="mayor-ventas">Ventas:</label>
+                    <input type="number" id="mayor-ventas" step="0.01" value="0">
+                </div>
+                <div class="mayor-input">
+                    <label for="mayor-devoluciones-ventas">Devoluciones sobre ventas:</label>
+                    <input type="number" id="mayor-devoluciones-ventas" step="0.01" value="0">
+                </div>
+                <div class="mayor-input">
+                    <label for="mayor-descuentos-ventas">Descuentos sobre ventas:</label>
+                    <input type="number" id="mayor-descuentos-ventas" step="0.01" value="0">
+                </div>
+                <div class="mayor-input">
+                    <label for="mayor-rebajas-ventas">Rebajas sobre ventas:</label>
+                    <input type="number" id="mayor-rebajas-ventas" step="0.01" value="0">
+                </div>
+                <div class="mayor-input">
+                    <label for="mayor-compras">Compras:</label>
+                    <input type="number" id="mayor-compras" step="0.01" value="0">
+                </div>
+                <div class="mayor-input">
+                    <label for="mayor-gastos-compras">Gastos sobre compras:</label>
+                    <input type="number" id="mayor-gastos-compras" step="0.01" value="0">
+                </div>
+                <div class="mayor-input">
+                    <label for="mayor-devoluciones-compras">Devoluciones sobre compras:</label>
+                    <input type="number" id="mayor-devoluciones-compras" step="0.01" value="0">
+                </div>
+                <div class="mayor-input">
+                    <label for="mayor-descuentos-compras">Descuentos sobre compras:</label>
+                    <input type="number" id="mayor-descuentos-compras" step="0.01" value="0">
+                </div>
+                <div class="mayor-input">
+                    <label for="mayor-rebajas-compras">Rebajas sobre compras:</label>
+                    <input type="number" id="mayor-rebajas-compras" step="0.01" value="0">
+                </div>
+                <div class="mayor-input">
+                    <label for="mayor-inventario-inicial">Inventario Inicial:</label>
+                    <input type="number" id="mayor-inventario-inicial" step="0.01" value="0">
+                </div>
+                <div class="mayor-input">
+                    <label for="mayor-inventario-final">Inventario Final:</label>
+                    <input type="number" id="mayor-inventario-final" step="0.01" value="0">
+                </div>
+                <button type="button" onclick="mostrarSaldosMayor()">Mostrar Saldos del Mayor</button>
+            </form>
+            <div id="saldos-mayor">
+                </div>
+
+            <h3>Balanza de Comprobación (Resumen)</h3>
+            <form id="formulario-balanza">
+                <div class="balanza-input">
+                    <label for="balanza-ventas">Ventas:</label>
+                    <input type="number" id="balanza-ventas" step="0.01" value="0">
+                </div>
+                <div class="balanza-input">
+                    <label for="balanza-devoluciones-ventas">Devoluciones sobre ventas:</label>
+                    <input type="number" id="balanza-devoluciones-ventas" step="0.01" value="0">
+                </div>
+                <div class="balanza-input">
+                    <label for="balanza-descuentos-ventas">Descuentos sobre ventas:</label>
+                    <input type="number" id="balanza-descuentos-ventas" step="0.01" value="0">
+                </div>
+                <div class="balanza-input">
+                    <label for="balanza-rebajas-ventas">Rebajas sobre ventas:</label>
+                    <input type="number" id="balanza-rebajas-ventas" step="0.01" value="0">
+                </div>
+                <div class="balanza-input">
+                    <label for="balanza-compras">Compras:</label>
+                    <input type="number" id="balanza-compras" step="0.01" value="0">
+                </div>
+                <div class="balanza-input">
+                    <label for="balanza-gastos-compras">Gastos sobre compras:</label>
+                    <input type="number" id="balanza-gastos-compras" step="0.01" value="0">
+                </div>
+                <div class="balanza-input">
+                    <label for="balanza-devoluciones-compras">Devoluciones sobre compras:</label>
+                    <input type="number" id="balanza-devoluciones-compras" step="0.01" value="0">
+                </div>
+                <div class="balanza-input">
+                    <label for="balanza-descuentos-compras">Descuentos sobre compras:</label>
+                    <input type="number" id="balanza-descuentos-compras" step="0.01" value="0">
+                </div>
+                <div class="balanza-input">
+                    <label for="balanza-rebajas-compras">Rebajas sobre compras:</label>
+                    <input type="number" id="balanza-rebajas-compras" step="0.01" value="0">
+                </div>
+                <div class="balanza-input">
+                    <label for="balanza-inventario-inicial">Inventario Inicial:</label>
+                    <input type="number" id="balanza-inventario-inicial" step="0.01" value="0">
+                </div>
+                <button type="button" onclick="mostrarResumenBalanza()">Mostrar Resumen de la Balanza</button>
+            </form>
+            <div id="resumen-balanza">
+                </div>
+        </section>
+    </main>
+            <p>&copy; 2025 - [Boys Rv2]</p>
+    </footer>
+
+    <script>
+        function calcularArqueo() {
+            const declarado = parseFloat(document.getElementById('efectivo-declarado').value);
+            const billetes1000 = parseInt(document.getElementById('billetes-1000').value) * 1000;
+            const billetes500 = parseInt(document.getElementById('billetes-500').value) * 500;
+            const billetes200 = parseInt(document.getElementById('billetes-200').value) * 200;
+            const billetes100 = parseInt(document.getElementById('billetes-100').value) * 100;
+            const billetes50 = parseInt(document.getElementById('billetes-50').value) * 50;
+            const billetes20 = parseInt(document.getElementById('billetes-20').value) * 20;
+            const monedas20 = parseInt(document.getElementById('monedas-20').value) * 20;
+            const monedas10 = parseInt(document.getElementById('monedas-10').value) * 10;
+            const monedas5 = parseInt(document.getElementById('monedas-5').value) * 5;
+            const monedas2 = parseInt(document.getElementById('monedas-2').value) * 2;
+            const monedas1 = parseInt(document.getElementById('monedas-1').value) * 1;
+            const monedas050 = parseFloat(document.getElementById('monedas-050').value) * 0.50;
+
+            const totalContado = billetes1000 + billetes500 + billetes200 + billetes100 + billetes50 + billetes20 + monedas20 + monedas10 + monedas5 + monedas2 + monedas1 + monedas050;
+            document.getElementById('total-contado').value = totalContado.toFixed(2);
+            const faltanteSobrante = totalContado - declarado;
+            document.getElementById('faltante-sobrante').value = faltanteSobrante.toFixed(2);
+
+            let resultado = `Fecha del Arqueo: ${document.getElementById('fecha-arqueo').value}<br>`;
+            resultado += `Efectivo Declarado: $${declarado.toFixed(2)}<br>`;
+            resultado += `Total Contado: $${totalContado.toFixed(2)}<br>`;
+            resultado += `Faltante/Sobrante: $${faltanteSobrante.toFixed(2)}`;
+            document.getElementById('resultado-arqueo').innerHTML = resultado;
+        }
+
+        function calcularEstadoResultadosPeriodico() {
+            const ingresosVentas = parseFloat(document.getElementById('ingresos-ventas').value) || 0;
+            const devolucionesSobreVentas = parseFloat(document.getElementById('devoluciones-ventas').value) || 0;
+            const descuentosSobreVentas = parseFloat(document.getElementById('descuentos-ventas').value) || 0;
+            const rebajasSobreVentas = parseFloat(document.getElementById('rebajas-ventas').value) || 0;
+            const inventarioInicial = parseFloat(document.getElementById('inventario-inicial').value) || 0;
+            const compras = parseFloat(document.getElementById('compras').value) || 0;
+            const gastosSobreCompras = parseFloat(document.getElementById('gastos-compras').value) || 0;
+            const devolucionesSobreCompras = parseFloat(document.getElementById('devoluciones-compras').value) || 0;
+            const descuentosSobreCompras = parseFloat(document.getElementById('descuentos-compras').value) || 0;
+            const rebajasSobreCompras = parseFloat(document.getElementById('rebajas-compras').value) || 0;
+            const inventarioFinal = parseFloat(document.getElementById('inventario-final').value) || 0;
+
+            const ventasNetas = ingresosVentas - devolucionesSobreVentas - descuentosSobreVentas - rebajasSobreVentas;
+            const comprasTotales = compras + gastosSobreCompras;
+            const comprasNetas = comprasTotales - devolucionesSobreCompras - descuentosSobreCompras - rebajasSobreCompras;
+            const costoVendido = inventarioInicial + comprasNetas - inventarioFinal;
+            const utilidadBruta = ventasNetas - costoVendido;
+
+            let resultado = `<h3>Resultado del Estado de Resultados (Periódico)</h3>`;
+            resultado += `Ventas Netas: $${ventasNetas.toFixed(2)}<br>`;
+            resultado += `Costo de lo Vendido: $${costoVendido.toFixed(2)}<br>`;
+            resultado += `Utilidad Bruta: $${utilidadBruta.toFixed(2)}`;
+            document.getElementById('resultado-estado-resultados').innerHTML = resultado;
+        }
+
+        function mostrarSaldosMayor() {
+            const mayorVentas = parseFloat(document.getElementById('mayor-ventas').value) || 0;
+            const mayorDevolucionesVentas = parseFloat(document.getElementById('mayor-devoluciones-ventas').value) || 0;
+            const mayorDescuentosVentas = parseFloat(document.getElementById('mayor-descuentos-ventas').value) || 0;
+            const mayorRebajasVentas = parseFloat(document.getElementById('mayor-rebajas-ventas').value) || 0;
+            const mayorCompras = parseFloat(document.getElementById('mayor-compras').value) || 0;
+            const mayorGastosCompras = parseFloat(document.getElementById('mayor-gastos-compras').value) || 0;
+            const mayorDevolucionesCompras = parseFloat(document.getElementById('mayor-devoluciones-compras').value) || 0;
+            const mayorDescuentosCompras = parseFloat(document.getElementById('mayor-descuentos-compras').value) || 0;
+            const mayorRebajasCompras = parseFloat(document.getElementById('mayor-rebajas-compras').value) || 0;
+            const mayorInventarioInicial = parseFloat(document.getElementById('mayor-inventario-inicial').value) || 0;
+            const mayorInventarioFinal = parseFloat(document.getElementById('mayor-inventario-final').value) || 0;
+
+            const saldos = {
+                'Ventas': mayorVentas,
+                'Devoluciones sobre ventas': mayorDevolucionesVentas,
+                'Descuentos sobre ventas': mayorDescuentosVentas,
+                'Rebajas sobre ventas': mayorRebajasVentas,
+                'Compras': mayorCompras,
+                'Gastos sobre compras': mayorGastosCompras,
+                'Devoluciones sobre compras': mayorDevolucionesCompras,
+                'Descuentos sobre compras': mayorDescuentosCompras,
+                'Rebajas sobre compras': mayorRebajasCompras,
+                'Inventario Inicial': mayorInventarioInicial,
+                'Inventario Final': mayorInventarioFinal
+            };
+
+            let contenido = '';
+            for (const cuenta in saldos) {
+                contenido += `${cuenta}: $${saldos[cuenta].toFixed(2)}<br>`;
+            }
+            document.getElementById('saldos-mayor').innerHTML = contenido;
+        }
+
+        function mostrarResumenBalanza() {
+            const balanzaVentas = parseFloat(document.getElementById('balanza-ventas').value) || 0;
+            const balanzaDevolucionesVentas = parseFloat(document.getElementById('balanza-devoluciones-ventas').value) || 0;
+            const balanzaDescuentosVentas = parseFloat(document.getElementById('balanza-descuentos-ventas').value) || 0;
+            const balanzaRebajasVentas = parseFloat(document.getElementById('balanza-rebajas-ventas').value) || 0;
+            const balanzaCompras = parseFloat(document.getElementById('balanza-compras').value) || 0;
+            const balanzaGastosCompras = parseFloat(document.getElementById('balanza-gastos-compras').value) || 0;
+            const balanzaDevolucionesCompras = parseFloat(document.getElementById('balanza-devoluciones-compras').value) || 0;
+            const balanzaDescuentosCompras = parseFloat(document.getElementById('balanza-descuentos-compras').value) || 0;
+            const balanzaRebajasCompras = parseFloat(document.getElementById('balanza-rebajas-compras').value) || 0;
+            const balanzaInventarioInicial = parseFloat(document.getElementById('balanza-inventario-inicial').value) || 0;
+
+            const balanza = {
+                'Ventas': balanzaVentas,
+                'Devoluciones sobre ventas': balanzaDevolucionesVentas,
+                'Descuentos sobre ventas': balanzaDescuentosVentas,
+                'Rebajas sobre ventas': balanzaRebajasVentas,
+                'Compras': balanzaCompras,
+                'Gastos sobre compras': balanzaGastosCompras,
+                'Devoluciones sobre compras': balanzaDevolucionesCompras,
+                'Descuentos sobre compras': balanzaDescuentosCompras,
+                'Rebajas sobre compras': balanzaRebajasCompras,
+                'Inventario Inicial': balanzaInventarioInicial
+            };
+
+            let contenido = '<h4>Saldos de la Balanza de Comprobación:</h4><ul>';
+            for (const cuenta in balanza) {
+                contenido += `<li>${cuenta}: $${balanza[cuenta].toFixed(2)}</li>`;
+            }
+            contenido += '</ul>';
+            document.getElementById('resumen-balanza').innerHTML = contenido;
+        }
+
+        // No llamamos a mostrarSaldosMayor y mostrarResumenBalanza al cargar la página
+        // para que el usuario pueda ingresar los datos primero y luego hacer clic en el botón.
+    </script>
+</body>
+</html>
